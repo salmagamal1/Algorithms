@@ -32,6 +32,7 @@ public:
 };
 class kruskal_graph{
     vector<vector<int>> vers;
+    set<int>set;
     int costg=-1;
     int costs=-1;
     int edges;
@@ -49,7 +50,10 @@ public:
                 s.unionf(ver[3],ver[4]);
                 costg=max(costg,ver[1]);
                 costs=max(costs,ver[2]);
+                set.insert(ver[3]);
+                set.insert(ver[4]);
             }
+            if(set.size()==edges) break;
         }
     }
     int get_cost() const{
