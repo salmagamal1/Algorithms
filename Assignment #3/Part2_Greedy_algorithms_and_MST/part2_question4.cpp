@@ -1,88 +1,97 @@
-//#include <iostream>
-//#include <vector>
-//#include <climits>
-//using namespace std;
-//#define ll long long
-//#define fast ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
-#include <iostream>
-#include <vector>
-#include <algorithm>
+#include <bits/stdc++.h>
+#define ll long long
+#define fast ios_base::sync_with_stdio(false); cin.tie(NULL); cout.tie(NULL);
 
 using namespace std;
 
+struct edge {
+    int x,y, g, s;
+};
 class Sets {
-    vector<int> parent;
 public:
+    vector<int> parent, rank;
+    int n;
+
     Sets(int v){
-        parent.resize(v);
-        for(int i=0 ;i<v ;i++){
-            parent[i]=i;
-        }
+        this->n=v;
+
+        parent.resize(v,-1);
+        rank.resize(v,1);
     }
     int find(int i){
-        if(parent[i]==i) return i;
-        else return find(parent[i]);
+        if (parent[i] == -1)
+            return i;
+        return parent[i] = find(parent[i]);
     }
-    void unionf (int i, int j){
-        int pi = find(i);
-        int pj = find(j);
-        parent[pi]=pj;
+    bool unionf(int x, int y) {
+        x = find(x), y = find(y);
+        if (x == y) return false;
+        if (rank[y] > rank[x]) swap(x, y);
+
+        rank[x] += rank[y];
+        parent[y] = x;
+
+        n--;
+        return true;
+
+
     }
+    bool connected(){return n==1;}
 
 };
-class kruskal_graph{
-    vector<vector<int>> vers;
-    set<int>set;
-    int costg=-1;
-    int costs=-1;
-    int edges;
-public:
-    kruskal_graph(vector<vector<int>>& vertcies,int edges) {
-        this->vers=vertcies;
-        this->edges=edges;
+
+int main(){
+    //n -> cities -> vertex
+    //m -> roads -> edges
+    fast
+    int n, m, G, S , max_g=INT_MAX, max_s=0;
+    ll result=LLONG_MAX;
+    cin >> n >> m >> G >> S;
+    vector<edge> edges(m);
+    for (int i = 0; i < m; i++) {
+        cin >> edges[i].x >> edges[i].y >> edges[i].g >> edges[i].s;
 
     }
-    void play(){
-        sort(vers.begin(),vers.end()); //sort based on the weight
-        Sets s(edges+1);
-        for(auto ver : vers){
-            if(s.find(ver[3])!=s.find(ver[4])){
-                s.unionf(ver[3],ver[4]);
-                costg=max(costg,ver[1]);
-                costs=max(costs,ver[2]);
-                set.insert(ver[3]);
-                set.insert(ver[4]);
+    sort(edges.begin(), edges.end(), [](const edge& e1, const edge& e2) {
+        return e1.g < e2.g;
+    });
+    //1. sort your edges based on gold (vector edge)
+    //2. put the lowest edge with gold in your sub tree (vector sub)
+    //3. sort your subtree edges based on silver (note that all these edges satisfy condition g<max_g since we push the edge that
+    //satisfy condition in it first before sorting)
+    //4. make a disjoint sets to be used later in the last point
+    // 5. loop over the edges in your sub tree edges ( that already satisfy condition g<max_g )
+    // 6. try to connect your sub tree vertecies and update max_s
+    //if your subtree contains all the vertecies aka(rank of root == n) then update result
+    vector<edge> sub;
+    for(auto e: edges){
+
+        Sets s(n+1);
+        sub.push_back(e);
+        sort(sub.begin(), sub.end(), [](const edge& e1, const edge& e2) {
+            return e1.s < e2.s;
+        });
+
+        vector <edge> clone;
+        max_s=0 ;
+        for(auto i:sub){
+            if (s.unionf(i.x, i.y)) {
+                clone.push_back(i);
+                max_s=max(max_s,i.s);
+                if(s.connected()) break;
             }
-            if(set.size()==edges) break;
         }
-    }
-    int get_cost() const{
-        if(costg==-1&&costs==-1) return -1;
-        else return costg+costs;
-    }
+        sub=clone; // if it in the clone that is mean it satisfies the 2 constions
+       int tr=s.rank[s.find(1)];
+        if(tr==n){
+            result=min(result,1LL*S*max_s+1LL*G*e.g);
+        }
 
-};
 
-int main() {
-    int n_city;
-    int n_roads;
-    int x,y,s,g,cs,cg;
-    vector<vector<int>> roads;
-    cin>>n_city>>n_roads;
-    cin>>cg>>cs;
-    while(n_roads--){
-        cin>>x>>y>>g>>s;
-        roads.push_back({(cg*g)+(cs*s),(cg*g),(cs*s),x,y});
+
     }
-    kruskal_graph kg(roads,n_city);
-    kg.play();
-    cout<<kg.get_cost();
+    if(result==LLONG_MAX) cout<<-1;
+    else cout<<result;
 
+    return 0;
 }
-/*
-3 3
-2 1
-1 2 10 15
-1 2 4 20
-1 3 5 1
- */
