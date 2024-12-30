@@ -14,6 +14,8 @@ int main() {
    char c='9';
 
     vector<char> v;
+    int f[26]={0};
+
     int n;
     cin>>c;
     while(c!=']'){
@@ -23,24 +25,26 @@ int main() {
         }
     }
     cin>>n;
-    string result(n,'9');
-    while(!v.empty()){
-        int i=0;
-        string sub=result.substr(result.size()-n,n);
-        while(sub.find(v[i])<n){
-            i++;
-        }
-        if(i>=v.size()) result+='1';
-        else{
-            result+=v[i];
-            v.erase(v.begin()+i);
+
+
+    int freq[26]={0};
+    int maxi=0, max_count=0;
+    for(auto a:v){
+        freq[a-'A']++;
+    }
+    for(int i=0 ; i<26; i++){
+        if(maxi==freq[i]) max_count++;
+        else if(maxi<freq[i]) {
+            maxi=freq[i];
+            max_count=1;
         }
     }
-   for(int i=n ; i<result.size()-1;i++){
-       if(result[i]=='1')cout<<"idle";
-       else cout<<result[i];
-       cout<<"->";
-   }cout<<result[result.size()-1];
+    int partcount= maxi-1;
+    int empty = partcount*(n-(max_count-1));
+    int avail = v.size()-(maxi*max_count);
+    int idles = max(0, empty-avail);
+    cout<<v.size()+idles;
+
 
 }
 // = ["A","A","A","B","B","B"] 2
